@@ -21,7 +21,7 @@ function setLoading(on) {
   checkBtn.disabled = on;
   checkBtn.textContent = on ? "Checking…" : "Check";
   loader.classList.toggle("hidden", !on);
-  results.classList.add("hidden");
+  if (on) results.classList.add("hidden");
 }
 
 async function checkURL() {
@@ -37,12 +37,12 @@ async function checkURL() {
       body: JSON.stringify({ url }),
     });
 
+    const data = await resp.json();
+
     if (!resp.ok) {
-      const err = await resp.json();
-      throw new Error(err.detail || "Server error");
+      throw new Error(data.detail || "Server error");
     }
 
-    const data = await resp.json();
     renderResults(data);
   } catch (e) {
     showError("Error: " + e.message);
@@ -52,13 +52,19 @@ async function checkURL() {
 }
 
 function renderResults(data) {
-  const { trust, ssl, whois, redirects, pattern_warnings, domain, checked_at } = data;
+  const trust = data.trust || {};
+  const ssl = data.ssl || {};
+  const whois = data.whois || {};
+  const redirects = data.redirects || {};
+  const pattern_warnings = data.pattern_warnings || [];
+  const domain = data.domain || "";
+  const checked_at = data.checked_at || new Date().toISOString();
 
   // Score card
   const scoreCard = document.getElementById("scoreCard");
-  scoreCard.className = "card score-card score-" + trust.color;
-  document.getElementById("scoreNumber").textContent = trust.score;
-  document.getElementById("scoreLevel").textContent = trust.level;
+  scoreCard.className = "card score-card score-" + (trust.color || "green");
+  document.getElementById("scoreNumber").textContent = trust.score != null ? trust.score : "?";
+  document.getElementById("scoreLevel").textContent = trust.level || "–";
   document.getElementById("scoreDomain").textContent = domain;
   document.getElementById("scoreChecked").textContent =
     "Checked at " + new Date(checked_at).toLocaleTimeString();
@@ -66,26 +72,20 @@ function renderResults(data) {
   // Flags
   const flagsList = document.getElementById("flagsList");
   flagsList.innerHTML = "";
-  if (trust.flags.length === 0) {
+  const flags = trust.flags || [];
+  if (flags.length === 0) {
     flagsList.innerHTML = '<li class="no-flags">✅ No risk flags detected</li>';
   } else {
-    trust.flags.forEach((f) => {
+    flags.forEach((f) => {
       const li = document.createElement("li");
       li.textContent = f;
       flagsList.appendChild(li);
     });
   }
 
-  // SSL
   document.getElementById("sslDetails").innerHTML = buildSSL(ssl);
-
-  // WHOIS
   document.getElementById("whoisDetails").innerHTML = buildWhois(whois);
-
-  // Redirects
   document.getElementById("redirectDetails").innerHTML = buildRedirects(redirects);
-
-  // Patterns
   document.getElementById("patternDetails").innerHTML = buildPatterns(pattern_warnings);
 
   results.classList.remove("hidden");
@@ -146,7 +146,7 @@ function buildRedirects(r) {
 }
 
 function buildPatterns(warnings) {
-  if (warnings.length === 0) {
+  if (!warnings || warnings.length === 0) {
     return `<div class="no-flags" style="font-size:0.88rem">✅ No suspicious patterns detected</div>`;
   }
   return warnings.map((w) =>
