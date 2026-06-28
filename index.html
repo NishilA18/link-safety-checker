@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Link Safety Checker</title>
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <div class="logo">🔗</div>
+      <h1>Link Safety Checker</h1>
+      <p class="subtitle">Paste any URL to analyze it for phishing, SSL issues, redirect chains, and more.</p>
+    </header>
+
+    <div class="input-section">
+      <div class="input-row">
+        <input
+          type="text"
+          id="urlInput"
+          placeholder="https://example.com or paste any suspicious link..."
+          autocomplete="off"
+          spellcheck="false"
+        />
+        <button id="checkBtn" onclick="checkURL()">Check</button>
+      </div>
+      <div id="error" class="error hidden"></div>
+    </div>
+
+    <div id="loader" class="loader hidden">
+      <div class="spinner"></div>
+      <p>Analyzing link…</p>
+    </div>
+
+    <div id="results" class="results hidden">
+
+      <!-- Trust Score -->
+      <div class="card score-card" id="scoreCard">
+        <div class="score-circle" id="scoreCircle">
+          <span id="scoreNumber">0</span>
+          <small>/100</small>
+        </div>
+        <div class="score-info">
+          <h2 id="scoreLevel">–</h2>
+          <p id="scoreDomain" class="domain-text"></p>
+          <p id="scoreChecked" class="checked-text"></p>
+        </div>
+      </div>
+
+      <!-- Flags -->
+      <div class="card" id="flagsCard">
+        <h3>⚠️ Risk Flags</h3>
+        <ul id="flagsList" class="flags-list"></ul>
+      </div>
+
+      <!-- Detail cards -->
+      <div class="detail-grid">
+
+        <div class="card detail-card">
+          <h3>🔒 SSL Certificate</h3>
+          <div id="sslDetails"></div>
+        </div>
+
+        <div class="card detail-card">
+          <h3>📋 Domain Info (WHOIS)</h3>
+          <div id="whoisDetails"></div>
+        </div>
+
+        <div class="card detail-card">
+          <h3>↪️ Redirect Chain</h3>
+          <div id="redirectDetails"></div>
+        </div>
+
+        <div class="card detail-card">
+          <h3>🔍 Pattern Analysis</h3>
+          <div id="patternDetails"></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
